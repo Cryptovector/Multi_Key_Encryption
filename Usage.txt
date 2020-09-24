@@ -1,0 +1,2 @@
+python Mult_Key.py -e -f Test.txt
+python Mult_Key.py -d -f Test.txt.enc
