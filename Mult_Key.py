@@ -16,7 +16,7 @@ def Gen_Scrypt_Instance(salt):
 	kdf = Scrypt(
 		salt=salt,
 		length=32,
-		n=2**17,
+		n=2**16,
 		r=8,
 		p=1,
 		backend=backend
@@ -85,6 +85,10 @@ def Dec_Index(Der_Key, Salt, Encrypted_dataset):
 	dataset = decryptor.update(Encrypted_dataset)
 	decryptor.finalize()
 	return dataset
+
+def Generate_Index(Salt, Key):
+	kdf = Gen_Scrypt_Instance(Salt)
+	return int.from_bytes(kdf.derive(Key), byteorder='big')&(Maxkeylength_2-1)
 
 def Create_System(filepath, out_filename=None):
 
@@ -180,11 +184,9 @@ def Create_System(filepath, out_filename=None):
 		while True: 
 			Salt = os.urandom(16)
 			Keyindex = {}
+			print("Try Generating Salt for unique Index assignment")
 			for i in range(Keycount):
-				Key_Hash = hashes.Hash(hashes.SHA256(), backend=default_backend())
-				Key_Hash.update(Salt)
-				Key_Hash.update(Keylist[i].encode('utf-8'))
-				Index = int.from_bytes(Key_Hash.finalize(), byteorder='big')&(Maxkeylength_2-1)
+				Index = Generate_Index(Salt, Keylist[i].encode('utf-8'))
 				if Index in Keyindex:
 					break
 				else:
@@ -372,13 +374,10 @@ def Decrypt_System(filepath, out_filename=None):
 			Answer = str(input())
 			if Answer == 'Y':
 				print("Thank you ... Try to decrypt System")
-
+				print("Try Generating unique Index assignment")
 				Index_list = []
 				for y in range(len(Keylist)):
-					Key_Hash = hashes.Hash(hashes.SHA256(), backend=default_backend())
-					Key_Hash.update(Salt)
-					Key_Hash.update(Keylist[y].encode('utf-8'))
-					Index_list.append(int.from_bytes(Key_Hash.finalize(), byteorder='big')&(Maxkeylength_2-1))
+					Index_list.append(Generate_Index(Salt, Keylist[y].encode('utf-8')))
 
 				for y in range(len(Index_list)):
 					with open(filepath, 'rb') as readfile:

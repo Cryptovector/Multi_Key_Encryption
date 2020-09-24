@@ -1,0 +1,71 @@
+[[[matrix operations & key_derivation]]]
+
+key's are derived with scrypt 
+
+matadata 1:
+
+metadata is stored unenrypted. 
+
+metadata 2:
+
+metadata is individuelly encrypted (1 key for metadata decryption)
+
+metadata 3:
+
+no metadata stored encryption of data is index dependent
+
+[[index generation & matrix]]
+
+matrix vector reconstraction leaks no information for single instance (endropie)
+information leak for metadata 1&2 for other key instances 
+
+[[metadata 3]]
+
+salt based key derivation for key/index assignment --> rainbow table based key filtering 
+filterfunction ("effectivity of sieve") for 256 keys --> 0.393 --> | runtime r*(1-prop) |
+
+256 | 0.3926775267317873
+128 | 0.11671197712573878
+64  | 0.030303030543823477
+32  | 0.007540995187242971
+16  | 0.0018295234375118809
+8   | 0.0004271711292456953
+4   | 9.155017325923609e-05
+2   | 1.52587890625e-05
+1   | 0.0
+
+####
+from fractions import fraction
+
+keylen = 256
+listlen = fraction(2**16)
+iter = fraction(1)
+prop = fraction(0)
+for i in range(1, keylen):
+	temp = i/listlen
+	prop += (temp*iter)
+	iter *= (1-temp)
+print(float(prop))	 
+####
+
+[[[file encryption]]] 
+key must be known and must be calculated to change data, detect [encryption can not be detected (indistinguishable from random data)], or read data from file 
+
+known variables
+ -hash of key
+ -hmac
+ -iv
+ -enc_file
+
+unknown variables
+ -key ?
+
+the iv and salt are random by default hmac is like the hash and enc_file cryptographic random with reference to key.
+this means what "key" must be known to change, detect or read the encrypted data.  
+
+(paddinglength and padding is encrypted with file)
+
+[[[general]]]
+the matrix & index operations are not timing constant ...
+sidechannel attacks are possible
+the security proof only applies to the encrypted data
